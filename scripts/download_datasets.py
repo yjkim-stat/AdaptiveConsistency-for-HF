@@ -1,7 +1,7 @@
 import json
 from datasets import load_dataset
 from pathlib import Path
-
+import argparse
 
 DATASET_CONFIGS = {
     "math500": {
@@ -23,6 +23,13 @@ DATASET_CONFIGS = {
         "split": "train",
         "input_col": "problem",
         "target_col": "answer",
+        "postprocess_target": lambda x: str(x)
+    },
+    "aime2024": {
+        "path": "Maxwell-Jia/AIME_2024",
+        "split": "train",
+        "input_col": "Problem",
+        "target_col": "Answer",
         "postprocess_target": lambda x: str(x)
     },
     "math500": {
@@ -64,11 +71,36 @@ def export_to_jsonl(
     print(f"✅ Saved {len(ds)} examples to {out_file}")
 
 
-# dataset_name = 'amc23'
-# dataset_name = 'aime2025'
-# dataset_name = 'math500'
-dataset_name = 'minerva'
-export_to_jsonl(
-    dataset_name=f"{dataset_name}",
-    output_path=f"datasets/{dataset_name}.jsonl"
-)
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Export HF math datasets to JSONL format"
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        required=True,
+        choices=DATASET_CONFIGS.keys(),
+        help="Dataset name to export",
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default=None,
+        help="Output JSONL path (default: datasets/<dataset>.jsonl)",
+    )
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+
+    output_path = (
+        args.output
+        if args.output is not None
+        else f"datasets/{args.dataset}.jsonl"
+    )
+
+    export_to_jsonl(
+        dataset_name=args.dataset,
+        output_path=output_path,
+    )
