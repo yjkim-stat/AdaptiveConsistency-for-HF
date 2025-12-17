@@ -39,6 +39,10 @@ import importlib
 step_reasoning = importlib.import_module(f'pal.prompt.{args.prompt_file}')
 
 
+def sanitize_name(s: str) -> str:
+    return s.replace("/", "_").replace(":", "_")
+
+
 DATA_PATH = f'datasets/{args.dataset}.jsonl'
 if not os.path.exists(DATA_PATH):
     DATA_PATH = f'datasets/{args.dataset}.json'
@@ -58,7 +62,7 @@ elif args.start_data is not None and args.end_data is not None:
     examples = examples[args.start_data:args.end_data]
     dataset_name += f'_{args.start_data}_{args.end_data}'
 
-OUTPUT_PATH = f'outputs/{args.model}/{dataset_name}/{dataset_name}_{args.max_gens}_{args.temperature}_stop{"self" if args.stop_criteria is None else args.stop_criteria}_seed{args.seed}.jsonl'
+OUTPUT_PATH = f'outputs/{sanitize_name(args.model)}/{sanitize_name(dataset_name)}/{dataset_name}_{args.max_gens}_Temp{args.temperature}_NTokens{args.max_tokens}_stop{"self" if args.stop_criteria is None else args.stop_criteria}_seed{args.seed}.jsonl'
 os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
 
 def extract_final_answer(s: str) -> str:

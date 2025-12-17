@@ -17,7 +17,14 @@ DATASET_CONFIGS = {
         "input_col": "question",
         "target_col": "answer",
         "postprocess_target": lambda x: x
-    }
+    },
+    "aime2025": {
+        "path": "MathArena/aime_2025",
+        "split": "train",
+        "input_col": "problem",
+        "target_col": "answer",
+        "postprocess_target": lambda x: str(x)
+    }    
 }
 
 
@@ -44,6 +51,7 @@ def export_to_jsonl(
 
 
 dataset_name = 'amc23'
+dataset_name = 'aime2025'
 export_to_jsonl(
     dataset_name=f"{dataset_name}",
     output_path=f"datasets/{dataset_name}.jsonl"
