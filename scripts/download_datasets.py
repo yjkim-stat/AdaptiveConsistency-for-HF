@@ -24,7 +24,21 @@ DATASET_CONFIGS = {
         "input_col": "problem",
         "target_col": "answer",
         "postprocess_target": lambda x: str(x)
-    }    
+    },
+    "math500": {
+        "path": "HuggingFaceH4/MATH-500",
+        "split": "test",
+        "input_col": "problem",
+        "target_col": "answer",
+        "postprocess_target": lambda x: str(x)
+    },
+    "minerva": {
+        "path": "math-ai/minervamath",
+        "split": "test",
+        "input_col": "question",
+        "target_col": "answer",
+        "postprocess_target": lambda x: str(x)
+    },      
 }
 
 
@@ -50,8 +64,10 @@ def export_to_jsonl(
     print(f"✅ Saved {len(ds)} examples to {out_file}")
 
 
-dataset_name = 'amc23'
-dataset_name = 'aime2025'
+# dataset_name = 'amc23'
+# dataset_name = 'aime2025'
+# dataset_name = 'math500'
+dataset_name = 'minerva'
 export_to_jsonl(
     dataset_name=f"{dataset_name}",
     output_path=f"datasets/{dataset_name}.jsonl"
