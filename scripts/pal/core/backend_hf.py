@@ -54,7 +54,7 @@ def normalize_multimodal_context(context: list) -> list:
         })
     return new_context
 
-def build_model_and_tokenizer(model_name: str, cache_dir: str | None) -> tuple[Any, Any]:
+def build_model_and_tokenizer(model_name: str, cache_dir):
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
     cache_dir = os.getenv('CACHE_DIR')
 
