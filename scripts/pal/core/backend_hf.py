@@ -11,6 +11,7 @@ from transformers import (
     BitsAndBytesConfig,
 )
 from transformers import Gemma3ForConditionalGeneration
+from transformers import Mistral3ForConditionalGeneration, FineGrainedFP8Config
 
 
 @dataclass
@@ -62,7 +63,8 @@ def build_model_and_tokenizer(model_name: str, cache_dir):
         "load_in_4bit": True,
         "load_in_8bit": False,
         "bnb_4bit_use_double_quant": True,
-        "bnb_4bit_compute_dtype": "float16",
+        # "bnb_4bit_compute_dtype": "float16",
+        "bnb_4bit_compute_dtype": torch.bfloat16, # float16 -> bfloat16 변경
         "bnb_4bit_quant_type": "nf4",
     }
 
@@ -96,6 +98,29 @@ def build_model_and_tokenizer(model_name: str, cache_dir):
         model.generation_config.pad_token_id = pad_id
         model.generation_config.eos_token_id = eos_id
         meta = {"family": "llama", "is_multimodal": False}  # 또는 gemma면 True
+    elif 'ministral' in model_name.lower():
+
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            cache_dir=cache_dir,
+        )
+
+        model = Mistral3ForConditionalGeneration.from_pretrained(
+            model_name,
+            torch_dtype=torch.bfloat16,
+            trust_remote_code=True,
+            # quantization_config=BitsAndBytesConfig(**quantization_config),
+            cache_dir=cache_dir,
+            attn_implementation=os.getenv("ATTN_IMPLEMENTATION", "flash_attention_2"),
+            token=os.getenv("HF_TOKEN"),
+        )
+
+        eos_id = tokenizer.eos_token_id
+        pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else eos_id
+        
+        model.generation_config.pad_token_id = pad_id
+        model.generation_config.eos_token_id = eos_id
+        meta = {"family": "mistral", "is_multimodal": False}  # 또는 gemma면 True
     elif 'qwen' in model_name.lower():
 
         tokenizer = AutoTokenizer.from_pretrained(
@@ -156,7 +181,7 @@ def build_model_and_tokenizer(model_name: str, cache_dir):
         meta = {"family": "gemma", "is_multimodal": True}  # 또는 gemma면 True
 
     else:
-        raise KeyError
+        raise KeyError(f'model_name : {model_name}')
     # model.config.pad_token_id = model.config.eos_token_id
     # tokenizer.pad_token = tokenizer.eos_token
 
