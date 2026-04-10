@@ -149,6 +149,36 @@ def build_model_and_tokenizer(model_name: str, cache_dir):
         model.generation_config.eos_token_id = eos_id
         meta = {"family": "qwen", "is_multimodal": False}  # 또는 gemma면 True
         
+    elif 'gemma-4' in model_name:
+
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            cache_dir=cache_dir,
+        )
+
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype='auto',
+            trust_remote_code=True,
+            device_map='auto',
+            quantization_config=BitsAndBytesConfig(**quantization_config),
+            cache_dir=cache_dir,
+            attn_implementation=os.getenv("ATTN_IMPLEMENTATION", "flash_attention_2"),
+            token=os.getenv("HF_TOKEN"),
+        )
+
+        eos_id = tokenizer.encode(
+            "<|end_of_turn|>", add_special_tokens=False
+        )[0]
+        pad_id = 0
+        pad_token = tokenizer.decode(pad_id)
+        model.generation_config.pad_token_id = pad_id
+        # model.generation_config.eos_token_id = [eos_id, model.generation_config.eos_token_id]
+        model.generation_config.eos_token_id = eos_id
+
+        processor = AutoProcessor.from_pretrained(model_name)
+    
+        meta = {"family": "gemma", "is_multimodal": True}  # 또는 gemma면 True
     elif 'gemma' in model_name:
 
         tokenizer = AutoTokenizer.from_pretrained(
